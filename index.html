@@ -1,0 +1,554 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>SAT Answer Sheet</title>
+
+<style>
+
+* {
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body {
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background:#f3f4f6;
+
+    color:#222;
+
+    padding:15px;
+}
+
+.container {
+
+    max-width:700px;
+
+    margin:0 auto;
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:20px;
+
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.08);
+}
+
+h1 {
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+    font-size:30px;
+}
+
+.progress {
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+    color:#555;
+
+    font-weight:600;
+}
+
+.question-block {
+
+    background:#f8f9ff;
+
+    border:1px solid #e5e7eb;
+
+    border-radius:16px;
+
+    padding:18px;
+
+    margin-bottom:20px;
+}
+
+.question-title {
+
+    font-size:20px;
+
+    font-weight:700;
+
+    margin-bottom:16px;
+}
+
+.toggle-container {
+    margin-bottom:16px;
+}
+
+.toggle-container label {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    font-weight:600;
+
+    font-size:16px;
+}
+
+.options {
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:12px;
+}
+
+.option-label {
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:white;
+
+    border:2px solid #dbe2f0;
+
+    border-radius:14px;
+
+    padding:16px;
+
+    font-size:20px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:0.2s;
+}
+
+.option-label:hover {
+    background:#eef2ff;
+}
+
+.option-label.selected {
+    background:#dbeafe;
+    border-color:#2563eb;
+}
+
+input[type="radio"] {
+    display:none;
+}
+
+.text-answer-input {
+
+    width:100%;
+
+    padding:16px;
+
+    border-radius:14px;
+
+    border:2px solid #dbe2f0;
+
+    font-size:18px;
+}
+
+#submit-btn {
+
+    width:100%;
+
+    margin-top:25px;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#4f46e5;
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    cursor:pointer;
+}
+
+#submit-btn:active {
+    transform:scale(0.98);
+}
+
+.success-message {
+
+    margin-top:25px;
+
+    text-align:center;
+
+    color:#059669;
+
+    font-size:22px;
+
+    font-weight:700;
+}
+
+@media(max-width:600px) {
+
+    .options {
+        grid-template-columns:1fr 1fr;
+    }
+
+    h1 {
+        font-size:26px;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>SAT Answer Sheet</h1>
+
+    <div class="progress">
+        Total Questions: 22
+    </div>
+
+    <div id="quiz-container"></div>
+
+    <button id="submit-btn">
+        Submit Answers
+    </button>
+
+    <div
+        id="success-message"
+        class="success-message"
+    ></div>
+
+</div>
+
+<script>
+
+const questions = [{"id": "1"}, {"id": "2"}, {"id": "3"}, {"id": "4"}, {"id": "5"}, {"id": "6"}, {"id": "7"}, {"id": "8"}, {"id": "9"}, {"id": "10"}, {"id": "11"}, {"id": "12"}, {"id": "13"}, {"id": "14"}, {"id": "15"}, {"id": "16"}, {"id": "17"}, {"id": "18"}, {"id": "19"}, {"id": "20"}, {"id": "21"}, {"id": "22"}];
+
+function renderQuiz() {
+
+    const container =
+        document.getElementById(
+            "quiz-container"
+        );
+
+    container.innerHTML = "";
+
+    questions.forEach((q,index)=>{
+
+        const block =
+            document.createElement("div");
+
+        block.className =
+            "question-block";
+
+        block.innerHTML =
+
+            `
+            <div class="question-title">
+                Question ${index+1}
+            </div>
+
+            <div class="toggle-container">
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        class="toggle-text-answer"
+                        data-qid="${q.id}"
+                    >
+
+                    Use Text Answer
+
+                </label>
+
+            </div>
+
+            <div
+                class="options"
+                id="options-${q.id}"
+            >
+
+                ${["a","b","c","d"]
+                    .map(letter => `
+
+                    <label
+                        class="option-label"
+                        data-qid="${q.id}"
+                    >
+
+                        <input
+                            type="radio"
+                            name="${q.id}"
+                            value="${letter}"
+                        >
+
+                        ${letter.toUpperCase()}
+
+                    </label>
+
+                `).join("")}
+
+            </div>
+
+            <div
+                id="text-answer-${q.id}"
+                style="display:none; margin-top:15px;"
+            >
+
+                <input
+                    type="text"
+                    class="text-answer-input"
+                    data-qid="${q.id}"
+                    placeholder="Type your answer"
+                >
+
+            </div>
+            `;
+
+        container.appendChild(block);
+    });
+
+    // TOGGLE TEXT MODE
+
+    document.querySelectorAll(
+        ".toggle-text-answer"
+    ).forEach(toggle => {
+
+        toggle.addEventListener(
+            "change",
+            function() {
+
+                const qid =
+                    this.dataset.qid;
+
+                const optionsDiv =
+                    document.getElementById(
+                        "options-" + qid
+                    );
+
+                const textDiv =
+                    document.getElementById(
+                        "text-answer-" + qid
+                    );
+
+                if(this.checked) {
+
+                    optionsDiv.style.display =
+                        "none";
+
+                    textDiv.style.display =
+                        "block";
+
+                } else {
+
+                    optionsDiv.style.display =
+                        "grid";
+
+                    textDiv.style.display =
+                        "none";
+                }
+            }
+        );
+    });
+
+    // OPTION SELECT HIGHLIGHT
+
+    document.querySelectorAll(
+        '.option-label input[type="radio"]'
+    ).forEach(radio => {
+
+        radio.addEventListener(
+            "change",
+            function() {
+
+                const qid =
+                    this.name;
+
+                document.querySelectorAll(
+                    '.option-label[data-qid="' + qid + '"]'
+                ).forEach(label => {
+
+                    label.classList.remove(
+                        "selected"
+                    );
+                });
+
+                this.parentElement.classList.add(
+                    "selected"
+                );
+            }
+        );
+    });
+}
+
+function downloadCSV(content, filename) {
+
+    const blob =
+        new Blob(
+            [content],
+            { type: 'text/csv;charset=utf-8;' }
+        );
+
+    const link =
+        document.createElement("a");
+
+    const url =
+        URL.createObjectURL(blob);
+
+    link.setAttribute("href", url);
+
+    link.setAttribute("download", filename);
+
+    link.style.visibility = 'hidden';
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+}
+
+function sanitizeFileName(name) {
+
+    return name
+        .replace(/[^a-z0-9]/gi, "_")
+        .toLowerCase();
+}
+
+function submitAnswers() {
+
+    let studentName =
+        prompt(
+            "Enter Student Name"
+        );
+
+    if(
+        !studentName ||
+        studentName.trim() === ""
+    ) {
+
+        alert(
+            "Student name is required."
+        );
+
+        return;
+    }
+
+    studentName =
+        studentName.trim();
+
+    let csvRows = [];
+
+    csvRows.push(
+        ["Question No", "Answer"]
+    );
+
+    questions.forEach((q,index)=>{
+
+        const textMode =
+            document.querySelector(
+                '.toggle-text-answer[data-qid="' + q.id + '"]'
+            ).checked;
+
+        let answer = "";
+
+        // TEXT MODE
+
+        if(textMode) {
+
+            const textInput =
+                document.querySelector(
+                    '.text-answer-input[data-qid="' + q.id + '"]'
+                );
+
+            answer =
+                textInput.value.trim();
+        }
+
+        // MCQ MODE
+
+        else {
+
+            const selected =
+                document.querySelector(
+                    'input[name="' + q.id + '"]:checked'
+                );
+
+            answer =
+                selected
+                    ? selected.value.toUpperCase()
+                    : "";
+        }
+
+        csvRows.push([
+            index + 1,
+            answer
+        ]);
+    });
+
+    const csvContent =
+        csvRows
+            .map(e =>
+                e.map(value =>
+                    `"${value}"`
+                ).join(",")
+            )
+            .join("\n");
+
+    const fileName =
+        sanitizeFileName(studentName)
+        + "_SAT_Answers.csv";
+
+    downloadCSV(
+        csvContent,
+        fileName
+    );
+
+    document.getElementById(
+        "success-message"
+    ).innerHTML =
+
+        "Answers exported successfully.";
+}
+
+document
+    .getElementById("submit-btn")
+    .addEventListener(
+        "click",
+        submitAnswers
+    );
+
+renderQuiz();
+
+</script>
+
+</body>
+</html>
